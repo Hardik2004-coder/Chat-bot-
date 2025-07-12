@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login | Bank Assistant</title>
+    <style>
+      /* Your original CSS */
+      * { box-sizing: border-box; }
+      body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #283593, #26c6da);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        overflow: hidden;
+      }
+      .container {
+        width: 900px;
+        height: 500px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        border-radius: 12px;
+        display: flex;
+        overflow: hidden;
+        background: #fff;
+      }
+      .form-container {
+        flex: 1;
+        padding: 40px 50px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: white;
+      }
+      h2 { margin-bottom: 28px; color: #222; }
+      input[type="text"], input[type="password"], input[type="date"] {
+        width: 100%;
+        padding: 12px 15px;
+        margin: 10px 0 20px;
+        border: 1.8px solid #ddd;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+      }
+      input:focus {
+        outline: none;
+        border-color: #283593;
+        box-shadow: 0 0 8px #283593aa;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        background-color: #283593;
+        border: none;
+        border-radius: 6px;
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      button:hover { background-color: #1a237e; }
+      .toggle-link {
+        margin-top: 18px;
+        display: inline-block;
+        color: #283593;
+        cursor: pointer;
+        font-size: 14px;
+        -webkit-user-select: none;
+        user-select: none;
+
+      }
+      .toggle-link:hover { text-decoration: underline; }
+      .remember-me {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+        font-size: 14px;
+        color: #444;
+      }
+      .remember-me input { margin-right: 8px; cursor: pointer; }
+      .image-container {
+        flex: 1;
+        background: url("bank.jpg") no-repeat center center;
+        background-size: cover;
+      }
+      #signup-box, #admin-box { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="form-container">
+        <!-- User Login -->
+        <div class="login-container" id="login-box">
+          <h2>User Login</h2>
+          <input type="text" placeholder="Username" id="login-username" />
+          <input type="password" placeholder="Password" id="login-password" />
+          <div class="remember-me">
+            <input type="checkbox" id="rememberMe" />
+            <label for="rememberMe">Remember Me</label>
+          </div>
+          <button onclick="loginUser()">Login</button>
+          <span class="toggle-link" onclick="toggleForm('signup')">Don't have an account? Sign Up</span><br />
+          <span class="toggle-link" onclick="toggleForm('admin')">Login as Admin</span>
+        </div>
+        <!-- User Signup -->
+        <div class="login-container" id="signup-box">
+          <h2>Create Account</h2>
+          <input type="text" placeholder="Full Name" id="signup-name" />
+          <input type="text" placeholder="Account Number" id="signup-account" />
+          <input type="date" id="signup-dob" placeholder="Date of Birth" />
+          <input type="text" placeholder="Username" id="signup-username" />
+          <input type="password" placeholder="Password" id="signup-password" />
+          <button onclick="signupUser()">Sign Up</button>
+          <span class="toggle-link" onclick="toggleForm('login')">Back to Login</span>
+        </div>
+        <!-- Admin Login -->
+        <div class="login-container" id="admin-box">
+          <h2>Admin Login</h2>
+          <input type="text" placeholder="Admin ID" id="admin-id" />
+          <input type="password" placeholder="Password" id="admin-password" />
+          <button onclick="loginAdmin()">Login as Admin</button>
+          <span class="toggle-link" onclick="toggleForm('login')">Back to User Login</span>
+        </div>
+      </div>
+      <div class="image-container"></div>
+    </div>
+
+    <script>
+      const defaultAdmin = { adminId: "admin123", password: "Admin@123" };
+
+      function toggleForm(form) {
+        document.getElementById("login-box").style.display = "none";
+        document.getElementById("signup-box").style.display = "none";
+        document.getElementById("admin-box").style.display = "none";
+
+        if (form === "login") {
+          document.getElementById("login-box").style.display = "block";
+        } else if (form === "signup") {
+          document.getElementById("signup-box").style.display = "block";
+        } else if (form === "admin") {
+          document.getElementById("admin-box").style.display = "block";
+        }
+
+        clearInputs();
+      }
+
+      function clearInputs() {
+        document.querySelectorAll("input").forEach((input) => input.value = "");
+        document.getElementById("rememberMe").checked = false;
+      }
+
+      function isPasswordStrong(password) {
+        const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+        return regex.test(password);
+      }
+
+      function loginUser() {
+        const username = document.getElementById("login-username").value.trim();
+        const password = document.getElementById("login-password").value.trim();
+        const remember = document.getElementById("rememberMe").checked;
+
+        let userData = sessionStorage.getItem("User");
+        if (!userData) {
+          alert("Please sign up first.");
+          return;
+        }
+
+        userData = JSON.parse(userData);
+
+        if (username !== userData.username || password !== userData.password) {
+          alert("Invalid username or password.");
+          return;
+        }
+
+        sessionStorage.setItem("User", JSON.stringify(userData));
+        sessionStorage.removeItem("isAdmin");
+
+        if (remember) {
+          localStorage.setItem("rememberedUser", username);
+        }
+
+        alert("Login successful!");
+        window.location.href = "index.html";
+      }
+
+      function signupUser() {
+        const name = document.getElementById("signup-name").value.trim();
+        const account = document.getElementById("signup-account").value.trim();
+        const dob = document.getElementById("signup-dob").value.trim();
+        const username = document.getElementById("signup-username").value.trim();
+        const password = document.getElementById("signup-password").value.trim();
+
+        if (!name || !dob || !username || !password) {
+          alert("Please fill in all required fields.");
+          return;
+        }
+
+        if (!isPasswordStrong(password)) {
+          alert("Password must be at least 8 characters long and include 1 uppercase letter, 1 number, and 1 special character.");
+          return;
+        }
+
+        const user = { name, account, dob, username, password };
+        sessionStorage.setItem("User", JSON.stringify(user));
+
+        alert("Signup successful! Please login.");
+        toggleForm("login");
+      }
+
+      function loginAdmin() {
+        const adminId = document.getElementById("admin-id").value.trim();
+        const adminPassword = document.getElementById("admin-password").value.trim();
+
+        if (!adminId || !adminPassword) {
+          alert("Please enter admin ID and password.");
+          return;
+        }
+
+        if (adminId === defaultAdmin.adminId && adminPassword === defaultAdmin.password) {
+          sessionStorage.setItem("isAdmin", "true");
+          sessionStorage.removeItem("User");
+          alert("Admin login successful!");
+          window.location.href = "admin_dashboard.html";
+        } else {
+          alert("Invalid admin credentials.");
+        }
+      }
+
+      // Load remembered user if available
+      window.onload = () => {
+        const rememberedUser = localStorage.getItem("rememberedUser");
+        if (rememberedUser) {
+          document.getElementById("login-username").value = rememberedUser;
+          document.getElementById("rememberMe").checked = true;
+        }
+        toggleForm("login");
+      };
+    </script>
+  </body>
+</html>

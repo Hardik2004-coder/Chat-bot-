@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <title>Bank Assistant</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="view-container">
+      <div class="chat-container">
+        <div class="ai-chat-box">
+          <div class="ai-img-box">
+            <img height="50" src="bot.png" alt="" class="aiimage" width="50" />
+          </div>
+          <div class="ai-chat-area">Hello client<br /></div>
+        </div>
+      </div>
+      <div class="prompt-area">
+        <div id="documentBox" class="document-hidden-box"></div>
+        <div class="prompt-input-area">
+          <input type="text" id="prompt" placeholder="" title = "prompt"/>
+        </div>
+        <div>
+          <button id="image" title = "image">
+            <img src="image.svg" alt="" />
+            <input type="file" accept="" hidden />
+          </button>
+        </div>
+        <div>
+          <button id="submit" title ="submit">
+            <img src="submit.svg" alt="" />
+          </button>
+        </div>
+      </div>
+      <!-- <div class="prompt-area">
+                <input type="text" id="prompt" placeholder=" Where next....">
+                <button id="image"> 
+                    <img src="image.svg"alt="">
+                    <input type="file" accept="images/*" hidden>
+                </button>
+                <button id="submit">
+                    <img src="submit.svg" alt="">
+                </button>
+            </div> -->
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

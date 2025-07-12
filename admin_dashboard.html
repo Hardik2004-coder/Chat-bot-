@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Admin - Bank Assistant</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .user-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px auto;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+      background-color: rgb(45,52,59);
+      justify-content: center;
+      max-width: 90%;
+    }
+
+    .admin-btn {
+      padding: 10px 15px;
+      font-size: 14px;
+      border-radius: 8px;
+      background-color: rgb(45,52,59);
+      color: white;
+      border: 1px solid white;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    .admin-btn:hover {
+      background-color: #333;
+    }
+
+    #graph-container {
+      text-align: center;
+      margin-top: 20px;
+      display: none;
+    }
+
+    #graph-image {
+      max-width: 90%;
+      height: auto;
+      border: 2px solid white;
+      border-radius: 8px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="view-container">
+    <div class="chat-container">
+      <div class="ai-chat-box">
+        <div class="ai-img-box">
+          <img height="50" src="bot.png" alt="" class="aiimage" width="50" />
+        </div>
+        <div class="ai-chat-area">Hello Admin 👋<br /></div>
+      </div>
+    </div>
+
+    <div id="graph-container">
+      <img id="graph-image" src="" alt="Graph will appear here when requested" />
+    </div>
+
+    <div class="user-controls">
+      <button class="admin-btn" onclick="handleAdminButtonClick('fetch client')">Fetch Client</button>
+      <button class="admin-btn" onclick="handleAdminButtonClick('check balance')">Check Balance</button>
+      <button class="admin-btn" onclick="handleAdminButtonClick('view transactions')">View Transactions</button>
+      <button class="admin-btn" onclick="clearChat()">Clear Chat</button>
+      <button class="admin-btn" onclick="logoutAdmin()">Logout</button>
+    </div>
+
+    <div class="prompt-area">
+      <div id="documentBox" class="document-hidden-box"></div>
+      <div class="prompt-input-area">
+        <input type="text" id="prompt" placeholder="Ask me something..." />
+      </div>
+      <div>
+        <button id="submit">
+          <img src="submit.svg" alt="Submit" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const promptInput = document.querySelector("#prompt");
+    const submitBtn = document.querySelector("#submit");
+    const chatContainer = document.querySelector(".chat-container");
+
+    function appendMessage(type, message) {
+      const box = document.createElement("div");
+      box.className = type === "user" ? "user-chat-box" : "ai-chat-box";
+      box.innerHTML = `
+        <div class="${type === "user" ? "user-img-box" : "ai-img-box"}">
+          <img src="${type === "user" ? "user.jpg" : "bot.png"}" class="${type === "user" ? "userimage" : "aiimage"}" />
+        </div>
+        <div class="${type === "user" ? "user-chat-area" : "ai-chat-area"}">${message}</div>
+      `;
+      chatContainer.appendChild(box);
+      chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: "smooth" });
+    }
+
+    async function getAnswerFromBackend(message) {
+      try {
+        let isAdmin = sessionStorage.getItem("isAdmin");
+        if (!isAdmin) {
+          alert("Session expired. Please login again.");
+          window.location.href = "login.html";
+          return;
+        }
+
+        const res = await fetch("http://127.0.0.1:3000/get-answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: message, acc_no: "" })  // Admin doesn't need acc_no
+        });
+
+        const data = await res.json();
+
+        appendMessage("bot", data.answer || "No response from server.");
+
+        // Show graph if backend sends it as base64 string
+        const graphContainer = document.getElementById("graph-container");
+        const graphImg = document.getElementById("graph-image");
+
+        if (data.graph) {
+          graphImg.src = `data:image/png;base64,${data.graph}`;
+          graphContainer.style.display = "block";
+        } else {
+          graphContainer.style.display = "none";
+        }
+
+      } catch (err) {
+        console.error(err);
+        appendMessage("bot", "⚠️ Could not reach the server.");
+      }
+    }
+
+    function handleUserMessage(message) {
+      appendMessage("user", message);
+      getAnswerFromBackend(message);
+      promptInput.value = "";
+    }
+
+    submitBtn.addEventListener("click", () => {
+      const msg = promptInput.value.trim();
+      if (msg) {
+        handleUserMessage(msg);
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && promptInput.value.trim()) {
+        handleUserMessage(promptInput.value.trim());
+      }
+    });
+
+    function handleAdminButtonClick(queryText) {
+      appendMessage("user", queryText);
+      getAnswerFromBackend(queryText);
+    }
+
+    function clearChat() {
+      chatContainer.innerHTML = "";
+      document.getElementById("graph-container").style.display = "none";
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem("isAdmin");
+      window.location.href = "login.html";
+    }
+
+    // Check session on load
+    if (!sessionStorage.getItem("isAdmin")) {
+      alert("Unauthorized access. Redirecting...");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
